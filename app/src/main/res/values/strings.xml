@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">DGrocery</string>
+    <string name="app_content">Saving your grocery data only locally and share it with your QR-Code</string>
+</resources>
