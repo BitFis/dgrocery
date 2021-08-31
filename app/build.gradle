@@ -3,6 +3,48 @@ plugins {
     id 'kotlin-android'
 }
 
+def get_config(environment_string, default_value) {
+    def result =  System.getenv(environment_string) ?: properties.get(environment_string)
+    if(!result) {
+        if(default_value) {
+            result = default_value
+        } else {
+            project.logger.warn(String.format('"%s" unconfigured, either set in ~/.gradle/gradle.properties or as env', environment_string))
+        }
+    }
+    return result
+}
+
+def get_config(environment_string) {
+    return get_config(environment_string, null)
+}
+
+
+def get_release_config() {
+    def password = get_config('APP_CONFIG_RELEASE_STORE_PASSWORD')
+    return {
+        storeFile file(get_config('APP_CONFIG_RELEASE_STOREFILE'))
+        storePassword password
+        keyAlias get_config('APP_CONFIG_RELEASE_STORE_ALIAS', 'key0')
+        keyPassword get_config('APP_CONFIG_RELEASE_STORE_KEY_PASSWORD', password)
+    }
+}
+
+// check git changes
+// allow override other versions (between 0-9)
+// allows for local tests of versions without messing with CICD auto publish
+def gitCommitOffset = 0
+def gitCommitsCount = ['sh', '-c', 'git rev-list --all --count'].execute().text.trim().toInteger()
+def gitLastTag = ['sh', '-c', 'git describe --tags'].execute().text.trim()
+def gitCountSinceLastTag = ['sh', '-c', 'git rev-list ' + gitLastTag + '^..HEAD | wc -l'].execute().text.trim().toInteger() - 1
+def dirtyPostfix = ['sh', '-c', 'test -z "$(git diff-index --name-only HEAD --)" || echo "-dirty"'].execute().text.trim()
+def gitCommitsCountSinceInfo = gitCountSinceLastTag > 0 ? '-r' + gitCountSinceLastTag : ''
+
+// println versionName + ' : ' + versionCode
+
+println 'deploy version: ' + String.format('%s%s%s', gitLastTag, gitCommitsCountSinceInfo, dirtyPostfix)
+println 'version count: ' + (gitCommitsCount * 10 + gitCommitOffset)
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -11,16 +53,21 @@ android {
         applicationId "io.zuercher.dgrocery"
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
-
+        versionCode (gitCommitsCount * 10 + gitCommitOffset)
+        versionName String.format('%s%s%s', gitLastTag, gitCommitsCountSinceInfo, dirtyPostfix)
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release get_release_config()
     }
 
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable = false
         }
     }
     compileOptions {
