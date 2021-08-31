@@ -51,7 +51,7 @@ def local_execute(command, default_value) {
 def gitCommitOffset = 0
 def gitCommitsCount = local_execute('git rev-list --all --count', '1').trim().toInteger()
 println('gitCommitsCount: ' + gitCommitsCount)
-def gitLastTag = local_execute('git describe --tags', 'v0.0.0').trim()
+def gitLastTag = local_execute('git tag --sort=-version:refname | head -n 1', 'v0.0.0').trim()
 println('gitLastTag: ' + gitLastTag)
 def gitCountSinceLastTag = local_execute('git rev-list ' + gitLastTag + '^..HEAD | wc -l', '0').trim().toInteger() - 1
 // def dirtyPostfix = ['sh', '-c', 'test -z "$(git diff-index --name-only HEAD --)" || echo "-dirty"'].execute().text.trim()

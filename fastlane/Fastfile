@@ -24,8 +24,7 @@ platform :android do
   desc "Submit a new build to internal testers"
   lane :internal do
     gradle(task: "clean bundleRelease")
-    # relase currently to draft
-    supply(track: 'internal', release_status: 'draft')
+    supply(track: 'internal')
   end
 
 #  desc "Submit a new Beta Build to Crashlytics Beta"
