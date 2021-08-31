@@ -35,9 +35,6 @@ sudo apt-get install autoconf bison build-essential libssl-dev libyaml-dev libre
 
 sudo gem install fastlane -NV
 
-# prepare play_config.json file
-echo WIP
-
 # check play_condfig.json file
 fastlane run validate_play_store_json_key json_key:play_config.json
 
