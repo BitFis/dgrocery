@@ -44,16 +44,19 @@ jobs:
           echo "$GOOGLE_SERVICE_ACCESS_CONFIG" > play_config.json
           echo "$GOOGLE_VERIFY_KEY" > key.pem
           echo "$GOOGLE_VERIFY_CERT" > cert.pem
-          export APP_CONFIG_RELEASE_STORE_PASSWORD="$(openssl rand -base64 32)"
-          export APP_CONFIG_RELEASE_STOREFILE="$(pwd)/release.pkcs12"
-          export APP_CONFIG_RELEASE_STORE_ALIAS="1"
+          echo "APP_CONFIG_RELEASE_STORE_PASSWORD=$(openssl rand -base64 32)" >> $GITHUB_ENV
+          echo "APP_CONFIG_RELEASE_STOREFILE=release.pkcs12" >> $GITHUB_ENV
+          echo "APP_CONFIG_RELEASE_STORE_ALIAS=1" >> $GITHUB_ENV
+
+      - name: Check exported variables
+        run: |
+          echo 'APP_CONFIG_RELEASE_STORE_PASSWORD: ${{env.APP_CONFIG_RELEASE_STORE_PASSWORD}}'
+          echo 'APP_CONFIG_RELEASE_STOREFILE: ${{env.APP_CONFIG_RELEASE_STOREFILE}}'
+          echo 'APP_CONFIG_RELEASE_STORE_ALIAS: ${{env.APP_CONFIG_RELEASE_STORE_ALIAS}}'
 
       - name: Convert pem to pkcs12
         run: |
-          openssl pkcs12 -export -out $APP_CONFIG_RELEASE_STOREFILE -passout pass:$APP_CONFIG_RELEASE_STORE_PASSWORD -in cert.pem -inkey key.pem
-          echo $APP_CONFIG_RELEASE_STORE_PASSWORD
-          echo $APP_CONFIG_RELEASE_STOREFILE
-          echo $APP_CONFIG_RELEASE_STORE_ALIAS
+          openssl pkcs12 -export -out ${{env.APP_CONFIG_RELEASE_STOREFILE}} -passout pass:${{env.APP_CONFIG_RELEASE_STORE_PASSWORD}} -in cert.pem -inkey key.pem
 
       - name: Build DGrocery app
         run: ./gradlew --no-daemon build
