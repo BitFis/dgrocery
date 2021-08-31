@@ -55,5 +55,11 @@ jobs:
         run: |
           openssl pkcs12 -export -out app/${{env.APP_CONFIG_RELEASE_STOREFILE}} -passout pass:${{env.APP_CONFIG_RELEASE_STORE_PASSWORD}} -in cert.pem -inkey key.pem
 
-      - name: Build DGrocery app
-        run: ./gradlew clean bundleRelease
+      - name: Setup fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7 # Not needed with a .ruby-version file
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+
+      - name: Build and deploy DGrocery app to internal testers
+        run: fastlane internal
