@@ -48,8 +48,8 @@ def local_execute(command, default_value) {
 // check git changes
 // allow override other versions (between 0-9)
 // allows for local tests of versions without messing with CICD auto publish
-def gitCommitOffset = 0
-def gitCommitsCount = local_execute('git rev-list --all --count', '1').trim().toInteger()
+def gitCommitOffset = 176 // offset for custom deployments
+def gitCommitsCount = local_execute('git rev-list --count main', '1').trim().toInteger()
 println('gitCommitsCount: ' + gitCommitsCount)
 def gitLastTag = local_execute('git tag --sort=-version:refname | head -n 1', 'v0.0.0').trim()
 println('gitLastTag: ' + gitLastTag)
@@ -61,7 +61,7 @@ def gitCommitsCountSinceInfo = gitCountSinceLastTag > 0 ? '-r' + gitCountSinceLa
 // println versionName + ' : ' + versionCode
 
 println 'deploy version: ' + String.format('%s%s%s', gitLastTag, gitCommitsCountSinceInfo, dirtyPostfix)
-println 'version count: ' + (gitCommitsCount * 10 + gitCommitOffset)
+println 'version count: ' + (gitCommitsCount + gitCommitOffset)
 
 android {
     compileSdkVersion 30
@@ -71,7 +71,7 @@ android {
         applicationId "io.zuercher.dgrocery"
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode (gitCommitsCount * 10 + gitCommitOffset)
+        versionCode (gitCommitsCount + gitCommitOffset)
         versionName String.format('%s%s%s', gitLastTag, gitCommitsCountSinceInfo, dirtyPostfix)
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
