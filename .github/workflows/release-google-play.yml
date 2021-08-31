@@ -1,4 +1,8 @@
-# This is a basic workflow to help you get started with Actions
+# This workflow builds the release app version and deployes it
+# to the google store, allowing the internal testers direct access
+# to the latest version
+# be sure to only run this on the main branch, since the versionCode is created as
+# -> commitCount * 10 + offset
 
 name: CI
 
@@ -6,9 +10,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main, chore/cicd ]
-#  pull_request:
-#    branches: [ main ]
+    branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
