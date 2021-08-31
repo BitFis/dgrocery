@@ -6,9 +6,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ main, chore/cicd ]
+#  pull_request:
+#    branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -48,15 +48,28 @@ jobs:
           echo "APP_CONFIG_RELEASE_STOREFILE=release.pkcs12" >> $GITHUB_ENV
           echo "APP_CONFIG_RELEASE_STORE_ALIAS=1" >> $GITHUB_ENV
 
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 0.0.1 # Optional fallback tag to use when no tag can be found
+
       - name: Check exported variables
         run: |
           echo 'APP_CONFIG_RELEASE_STORE_PASSWORD: ${{env.APP_CONFIG_RELEASE_STORE_PASSWORD}}'
           echo 'APP_CONFIG_RELEASE_STOREFILE: ${{env.APP_CONFIG_RELEASE_STOREFILE}}'
           echo 'APP_CONFIG_RELEASE_STORE_ALIAS: ${{env.APP_CONFIG_RELEASE_STORE_ALIAS}}'
 
+      - name: Get commit cound
+        run: |
+          ls
+          git rev-list --all --count
+          git tag --sort=-version:refname | head -n 1
+
       - name: Convert pem to pkcs12
         run: |
           openssl pkcs12 -export -out ${{env.APP_CONFIG_RELEASE_STOREFILE}} -passout pass:${{env.APP_CONFIG_RELEASE_STORE_PASSWORD}} -in cert.pem -inkey key.pem
+          ls
 
       - name: Build DGrocery app
         run: ./gradlew --no-daemon build
