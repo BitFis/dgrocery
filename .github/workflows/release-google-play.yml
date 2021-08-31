@@ -29,6 +29,9 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0                # fetch the whole repo history
 
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
@@ -68,7 +71,7 @@ jobs:
 
       - name: Convert pem to pkcs12
         run: |
-          openssl pkcs12 -export -out ${{env.APP_CONFIG_RELEASE_STOREFILE}} -passout pass:${{env.APP_CONFIG_RELEASE_STORE_PASSWORD}} -in cert.pem -inkey key.pem
+          openssl pkcs12 -export -out app/${{env.APP_CONFIG_RELEASE_STOREFILE}} -passout pass:${{env.APP_CONFIG_RELEASE_STORE_PASSWORD}} -in cert.pem -inkey key.pem
           ls
 
       - name: Build DGrocery app
